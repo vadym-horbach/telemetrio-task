@@ -3,9 +3,7 @@ import { Observable } from 'rxjs'
 import { tap } from 'rxjs/operators'
 import { AppLoggerService, AsyncStorageService } from '../../core'
 import { HEADER_REQUEST_ID } from '../constants'
-import { I_AuthorizedFastifyRequest } from '../../modules/auth/auth.types'
 import { I_FastifyReply } from '../interfaces'
-import { CURRENT_USER_KEY } from '../../modules/auth/guards/constants'
 
 @Injectable()
 export class AppInterceptor implements NestInterceptor {
@@ -17,17 +15,16 @@ export class AppInterceptor implements NestInterceptor {
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const request = context.switchToHttp().getRequest<I_AuthorizedFastifyRequest>()
+    const request = context.switchToHttp().getRequest()
     const { method, url } = request
 
     const requestID = request.headers[HEADER_REQUEST_ID] || request.id
-    const userID = request[CURRENT_USER_KEY]?.id || 'unauthorized'
-    this.asyncStorage.setRequestID(requestID).setUserID(userID).setI18n(context)
+    this.asyncStorage.setRequestID(requestID)
 
     if (url !== '/') {
       this.logger.http({
         eventType: 'start-request',
-        message: `Start request with id: ${requestID}. Initiated by ${userID}`,
+        message: `Start request with id: ${requestID}`,
         method,
         url,
         headers: request.headers,
@@ -46,7 +43,7 @@ export class AppInterceptor implements NestInterceptor {
             const responseTime = Date.now() - startTime
             this.logger.http({
               eventType: 'end-request',
-              message: `End request with id: ${requestID}. Initiated by ${userID}`,
+              message: `End request with id: ${requestID}`,
               method,
               url,
               responseTime,
@@ -62,7 +59,7 @@ export class AppInterceptor implements NestInterceptor {
             this.logger.error(error)
             this.logger.http({
               eventType: 'failed-request',
-              message: `Failed request with id: ${requestID}. Initiated by ${userID}`,
+              message: `Failed request with id: ${requestID}`,
               method,
               url,
               responseTime,

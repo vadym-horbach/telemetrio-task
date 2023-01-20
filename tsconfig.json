@@ -28,6 +28,6 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["src/main.ts", "src/migrations/**/*.ts", "test/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*spec.ts", "test/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

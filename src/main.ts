@@ -2,17 +2,12 @@ import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, VERSION_NEUTRAL, VersioningType } from '@nestjs/common'
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
 import helmet from '@fastify/helmet'
-import { I18nValidationExceptionFilter } from 'nestjs-i18n'
-import { contentParser } from 'fastify-multer'
 import { AppModule } from './app.module'
 import { setupSwagger } from './setup-swagger'
 import { AppConfigService, AppLoggerService, ClusterService } from './core'
 import { exceptionFactory } from './common/serializers/exceptions'
 import { AppInterceptor } from './common/interceptors'
-import { AuthGuard } from './modules/auth/guards'
 import { AppClassSerializerInterceptor } from './common/serializers/responses'
-import { SocketAdapter } from './providers/socket'
-import { ThrottlerBehindProxyGuard } from './common/guards'
 
 async function bootstrap(): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -31,7 +26,6 @@ async function bootstrap(): Promise<NestFastifyApplication> {
       },
     },
   })
-  void app.register(contentParser)
 
   app.enableCors({
     origin: config.corsOrigins,
@@ -44,7 +38,6 @@ async function bootstrap(): Promise<NestFastifyApplication> {
 
   app
     .enableVersioning({ type: VersioningType.URI, defaultVersion: VERSION_NEUTRAL })
-    .useGlobalGuards(app.get(ThrottlerBehindProxyGuard), app.get(AuthGuard))
     .useGlobalInterceptors(app.get(AppInterceptor), app.get(AppClassSerializerInterceptor))
     .useGlobalPipes(
       new ValidationPipe({
@@ -54,12 +47,9 @@ async function bootstrap(): Promise<NestFastifyApplication> {
         validationError: { target: true, value: true },
         stopAtFirstError: true,
         exceptionFactory,
-        enableDebugMessages: config.isLocal,
+        enableDebugMessages: config.isDevelopment,
       }),
     )
-    .useGlobalFilters(new I18nValidationExceptionFilter())
-    .useWebSocketAdapter(new SocketAdapter(app))
-
   if (!config.isProduction) setupSwagger(app)
 
   await app.listen(config.port, '0.0.0.0')

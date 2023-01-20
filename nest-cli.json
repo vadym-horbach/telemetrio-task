@@ -3,15 +3,15 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "assets": [
-      { "include": "**/*.hbs", "outDir": "dist/src", "watchAssets": true },
-      { "include": "languages/**/*", "outDir": "dist/src", "watchAssets": true }
-    ],
+    "assets": [{ "include": "**/*.hbs", "outDir": "dist/src", "watchAssets": true }],
     "watchAssets": true,
     "plugins": [
       {
         "name": "@nestjs/swagger/plugin",
-        "options": { "dtoFileNameSuffix": [".dto.ts", "entity.ts"], "introspectComments": true }
+        "options": {
+          "dtoFileNameSuffix": ["dto.ts", "entity.ts", "schema.ts"],
+          "introspectComments": true
+        }
       }
     ]
   }

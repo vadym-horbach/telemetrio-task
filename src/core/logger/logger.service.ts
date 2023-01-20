@@ -26,7 +26,7 @@ export class AppLoggerService implements LoggerService {
 
   private getLoggerInstance(): Logger {
     if (!AppLoggerService.winstonLogger) {
-      const enableConsole = !this.config.isCloudWatchEnabled || this.config.isLocal
+      const enableConsole = !this.config.isCloudWatchEnabled || this.config.isDevelopment
       const defaultFormat = enableConsole
         ? winston.format.colorize({ all: true })
         : winston.format.uncolorize({
@@ -94,7 +94,6 @@ export class AppLoggerService implements LoggerService {
       context: context || this.context,
       processID: process.pid,
       requestID: this.asyncStorage.getRequestID(),
-      userID: this.asyncStorage.getUserID(),
     }
 
     if (_.isString(message)) {

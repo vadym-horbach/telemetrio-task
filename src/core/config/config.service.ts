@@ -1,7 +1,6 @@
 import dotenv from 'dotenv'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { VALIDATED_ENV_PROPNAME } from '@nestjs/config/dist/config.constants'
 import path from 'path'
 import fs from 'fs'
@@ -35,10 +34,6 @@ export class AppConfigService extends ConfigService<EnvironmentDTO> {
     return <EnvironmentEnum>this.get('NODE_ENV')
   }
 
-  get isLocal() {
-    return this.environment === EnvironmentEnum.LOCAL
-  }
-
   get isDevelopment() {
     return this.environment === EnvironmentEnum.DEVELOPMENT
   }
@@ -52,7 +47,7 @@ export class AppConfigService extends ConfigService<EnvironmentDTO> {
   }
 
   get isClusterEnabled() {
-    return !this.isLocal && <boolean>this.get('ENABLE_CLUSTER')
+    return !this.isDevelopment && <boolean>this.get('ENABLE_CLUSTER')
   }
 
   get loggingLevel() {
@@ -74,20 +69,6 @@ export class AppConfigService extends ConfigService<EnvironmentDTO> {
     return [this.clientRootUrl, this.apiRootUrl, ...origins]
   }
 
-  get defaultJwt() {
-    return {
-      secret: <string>this.get('DEFAULT_JWT_SECRET'),
-      expiresIn: <string>this.get('DEFAULT_JWT_EXPIRES'),
-    }
-  }
-
-  get refreshJwt() {
-    return {
-      secret: <string>this.get('REFRESH_JWT_SECRET'),
-      expiresIn: <string>this.get('REFRESH_JWT_EXPIRES'),
-    }
-  }
-
   get isCloudWatchEnabled() {
     return <boolean>this.get('ENABLE_CLOUDWATCH')
   }
@@ -106,68 +87,7 @@ export class AppConfigService extends ConfigService<EnvironmentDTO> {
     return null
   }
 
-  get database(): PostgresConnectionOptions {
-    return {
-      type: 'postgres',
-      host: <string>this.get('DB_HOST'),
-      port: <number>this.get('DB_PORT'),
-      username: <string>this.get('DB_USERNAME'),
-      password: <string>this.get('DB_PASSWORD'),
-      database: <string>this.get('DB_DATABASE'),
-      logging: this.isLocal,
-    }
-  }
-
-  get cacheConfig() {
-    return {
-      host: <string>this.get('REDIS_HOST'),
-      port: <number>this.get('REDIS_PORT'),
-      password: this.get<string>('REDIS_PASSWORD'),
-      ttl: <number>this.get('REDIS_CACHE_TTL'),
-      db: <number>this.get('REDIS_DB'),
-    }
-  }
-
-  get googleApi() {
-    return {
-      clientId: <string>this.get('GOOGLE_CLIENT_ID'),
-      secret: <string>this.get('GOOGLE_CLIENT_SECRET'),
-      scope: <string>this.get('GOOGLE_SCOPE'),
-    }
-  }
-
-  get appleApi() {
-    return {
-      clientId: <string>this.get('APPLE_CLIENT_ID'),
-      secret: <string>this.get('APPLE_CLIENT_SECRET'),
-      scope: <string>this.get('APPLE_SCOPE'),
-    }
-  }
-
-  get rateLimit() {
-    return {
-      ttl: <number>this.get('RATE_LIMIT_TTL'),
-      limit: <number>this.get('RATE_LIMIT'),
-    }
-  }
-
-  get smtp() {
-    return {
-      host: <string>this.get('SMTP_HOST'),
-      port: <number>this.get('SMTP_PORT'),
-      secure: <boolean>this.get('SMTP_SECURE'),
-      from: this.get<string>('MAIL_FROM'),
-      user: <string>this.get('SMTP_USER'),
-      password: <string>this.get('SMTP_PASSWORD'),
-    }
-  }
-
-  get s3Config() {
-    return {
-      awsAccessKey: <string>this.get('AWS_S3_ACCESS_KEY'),
-      awsSecretKey: <string>this.get('AWS_S3_KEY_SECRET'),
-      awsRegion: <string>this.get('AWS_S3_REGION'),
-      bucket: <string>this.get('AWS_S3_BUCKET'),
-    }
+  get database() {
+    return { uri: <string>this.get('DB_URI') }
   }
 }
